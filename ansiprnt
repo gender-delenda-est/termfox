@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+"""
+works as follows:
+
+  ./ansiprnt <IMAGE>
+
+- the image should be about 21x24 pixels
+
+to save the output you can pipe it to a file like this:
+
+  ./ansiprnt <IMAGE> > output
+                     ^ (literally type this one)
+"""
+
+from PIL import Image
+import sys
+import os
+
+
+def color_to_ansi(color):
+    r, g, b = map(lambda n: n * 6 // 256, color)
+    return 16 + 36 * r + 6 * g + 1 * b
+
+def image2ansi(filename):
+    im = Image.open(filename)
+    im = im.convert("RGB")
+
+    # add extra row if uneven, so that the pattern matches up
+    if im.height % 2 == 1:
+        im = im.crop((0, 0, im.width, im.height+1))
+
+    result = ""
+    for y in range(0, im.height, 2):
+        for x in range(im.width):
+            fg = color_to_ansi(im.getpixel((x, y)))
+            bg = color_to_ansi(im.getpixel((x, y+1)))
+            result += f"\033[38;5;{fg}m\033[48;5;{bg}m▀"
+        result += "\033[0m\n"
+
+    return result[:-1]
+
+if len(sys.argv) != 2:
+    print("usage: ansiprnt <image> \n- r fox & autumn, 2022")
+    exit(1)
+
+if not os.path.isfile(sys.argv[1]):
+    print(f"error: no such file '{sys.argv[1]}'")
+    exit(1)
+
+
+image = image2ansi(sys.argv[1])
+
+print(image)

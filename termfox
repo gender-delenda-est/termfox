@@ -1,0 +1,15 @@
+#! /usr/bin/bash
+
+cols=$(tput cols)
+lines=$(tput lines)
+
+width=$((cols * 2 - 5))
+height=$((lines * 2 - 5))
+
+curl -s https://api.tinyfox.dev/img?animal=fox > ~/.fox.jpg
+
+mogrify -scale "$width"x"$height" ~/.fox.jpg
+
+ansiprnt ~/.fox.jpg
+
+rm ~/.fox.jpg
